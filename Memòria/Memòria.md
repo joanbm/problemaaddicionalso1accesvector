@@ -17,7 +17,18 @@ Un dels principals problemes que es planteja és com fer la mesura de forma que 
 Per exemple, una forma (incorrecta) de fer la mesura seria la següent:
 
 ```c
-[Codi font esborrat fins a l'entrega. Es mostra un codi amb dos bucles for diferents, sense generar els nombres aleatoris amb anterioritat]
+if (!randomize)
+{
+	for (size_t i = 0; i < num_iterations; i++) {
+		vector[i % vector_size];
+	}
+}
+else
+{
+	for (size_t i = 0; i < num_iterations; i++) {
+		vector[rand()];
+	}
+}
 ```
 
 Aquesta forma de fer les mesures té diversos problemes:
@@ -39,7 +50,10 @@ Per exemple, en el cas aleatori, amb una mida de vector de 5, potser la permutac
 Amb aquesta idea, el cos de la prova queda:
 
 ```c
-[Codi font esborrat fins a l'entrega. Es mostra un codi amb un bucle for, que recorre els índexs guardats dins el mateix vector].
+size_t idx = 0;
+for (size_t i = 0; i < num_iterations; i++)
+	idx = vector[idx];
+}
 ```
 
 D'aquesta manera, hem aconseguit, per una banda, reduir moltes de les despeses secundàries que estàvem tenint dins del bucle (fent, per exemple, la computació dels nombres aleatoris fora del bucle mesurat), i assegurar que la prova sigui justa, ja que ambdós casos executaran el mateix bucle, i per tant, les mateixes instruccions màquina.
@@ -51,7 +65,7 @@ En el codi anterior, és fàcil que el compilador pugui adonar-se'n de que, desp
 Per aconseguir que no l'esborri, hem de fer alguna cosa que forci el compilador a no esborrar la variable. Per exemple, fer un `printf` de `idx` desprès de la prova és suficient. En el meu cas, he afegit just després de la prova:
 
 ```c
-[Codi font esborrat fins a l'entrega. Es mostra un codi amb una variable declarada com a volatile].
+volatile size_t useme = idx;
 ```
 
 L'ús de `volatile` força al compilador a copiar `idx` a una nova posició de memòria, i per tant, a calcular `idx`, executant en cos de la prova anterior.
@@ -77,7 +91,42 @@ Realment aquest muntatge ja és bastant bo, i ja podem obtenir bones mesures d'a
 Per tal d'intentar reduir la sobrecàrrega de les instruccions `subq` i `jne`, podem fer un unrolling del bucle, és a dir, repetir diverses vegades el cos del bucle. Si repetim l'interior del bucle 32 vegades com:
 
 ```c
-[Codi font esborrat fins a l'entrega. Es mostra un codi amb el bucle for desenvolupat ('unrolled').]
+size_t idx = 0;
+for (size_t i = 0; i < num_iterations; i += 32)
+{
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+	idx = vector[idx];
+}
 ```
 
 Aleshores el cos del bucle en assemblador queda:
